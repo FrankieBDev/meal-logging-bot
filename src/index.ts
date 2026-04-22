@@ -27,59 +27,63 @@ app.get("/test-error", () => {
   throw new Error("Test error");
 });
 
-app.post("/telegram/webhook", (req, res) => {
-  const senderId = req.body?.message?.from?.id;
+app.post("/telegram/webhook", async (req, res, next) => {
+  try {
+    const senderId = req.body?.message?.from?.id;
 
-  if (!senderId) {
-    logger.warn("Rejected Telegram webhook: missing sender ID");
+    if (!senderId) {
+      logger.warn("Rejected Telegram webhook: missing sender ID");
 
-    res.status(400).json({
-      status: "rejected",
-      reason: "missing_sender_id",
-    });
+      res.status(400).json({
+        status: "rejected",
+        reason: "missing_sender_id",
+      });
 
-    return;
-  }
+      return;
+    }
 
-  if (String(senderId) !== env.telegramAllowedUserId) {
-    logger.warn("Rejected Telegram webhook from unauthorised user", {
+    if (String(senderId) !== env.telegramAllowedUserId) {
+      logger.warn("Rejected Telegram webhook from unauthorised user", {
+        senderId,
+      });
+
+      res.status(403).json({
+        status: "rejected",
+        reason: "unauthorised_user",
+      });
+
+      return;
+    }
+
+    const messageText = req.body?.message?.text;
+
+    if (typeof messageText !== "string") {
+      logger.warn("Rejected Telegram webhook: missing message text", {
+        senderId,
+      });
+
+      res.status(400).json({
+        status: "rejected",
+        reason: "missing_message_text",
+      });
+
+      return;
+    }
+
+    logger.info("Accepted Telegram webhook command", {
       senderId,
+      messageText,
     });
 
-    res.status(403).json({
-      status: "rejected",
-      reason: "unauthorised_user",
-    });
+    const commandResponse = await routeCommandText(messageText);
 
-    return;
+    res.json({
+      status: "received",
+      commandResponse,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  const messageText = req.body?.message?.text;
-
-  if (typeof messageText !== "string") {
-    logger.warn("Rejected Telegram webhook: missing message text", {
-      senderId,
-    });
-
-    res.status(400).json({
-      status: "rejected",
-      reason: "missing_message_text",
-    });
-
-    return;
-  }
-
-  logger.info("Accepted Telegram webhook command", {
-    senderId,
-    messageText,
-  });
-
-  const commandResponse = routeCommandText(messageText);
-
-  res.json({
-    status: "received",
-    commandResponse,
-  });
 });
 
 app.get("/debug/sheets-title", async (_req, res, next) => {

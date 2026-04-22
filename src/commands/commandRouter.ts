@@ -1,9 +1,10 @@
 import { parseCommandText } from "./commandParser";
 import { type CommandResponse } from "./commandResponse";
 import { type BotCommand, type ParsedCommand } from "./commandTypes";
+import { handleAddInventoryCommand } from "./handlers/addInventoryHandler";
 import { handleHelpCommand } from "./handlers/helpHandler";
 
-export function routeCommandText(text: string): CommandResponse {
+export async function routeCommandText(text: string): Promise<CommandResponse> {
   const parseResult = parseCommandText(text);
 
   if (!parseResult.success) {
@@ -19,12 +20,16 @@ export function routeCommandText(text: string): CommandResponse {
   return routeParsedCommand(parseResult.parsedCommand);
 }
 
-function routeParsedCommand(parsedCommand: ParsedCommand): CommandResponse {
+async function routeParsedCommand(
+  parsedCommand: ParsedCommand
+): Promise<CommandResponse> {
   switch (parsedCommand.command) {
     case "help":
       return handleHelpCommand();
 
     case "addInventory":
+      return handleAddInventoryCommand(parsedCommand);
+
     case "logMeal":
     case "addProduct":
     case "closeDay":
