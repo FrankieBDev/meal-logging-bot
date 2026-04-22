@@ -1,4 +1,5 @@
 import express from "express";
+import { routeCommandText } from "./commands/commandRouter.js";
 import { env } from "./config/env.js";
 import { errorHandler } from "./errors/errorHandler.js";
 import { logger } from "./logger.js";
@@ -53,12 +54,31 @@ app.post("/telegram/webhook", (req, res) => {
     return;
   }
 
-  logger.info("Accepted Telegram webhook payload", {
-    payload: req.body,
+  const messageText = req.body?.message?.text;
+
+  if (typeof messageText !== "string") {
+    logger.warn("Rejected Telegram webhook: missing message text", {
+      senderId,
+    });
+
+    res.status(400).json({
+      status: "rejected",
+      reason: "missing_message_text",
+    });
+
+    return;
+  }
+
+  logger.info("Accepted Telegram webhook command", {
+    senderId,
+    messageText,
   });
+
+  const commandResponse = routeCommandText(messageText);
 
   res.json({
     status: "received",
+    commandResponse,
   });
 });
 

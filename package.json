@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "dev": "tsx src/index.ts",
-  "build": "tsc",
-  "start": "node dist/index.js",
-  "test": "vitest run"
-},
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run --dir src --exclude dist/** --pool threads"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
