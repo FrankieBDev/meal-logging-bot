@@ -101,6 +101,21 @@ describe("parseCommandText", () => {
     }
   });
 
+  it("returns a helpful error for unquoted multi-word values", () => {
+    const result = parseCommandText(
+      "/addInventory item_name=red lentils quantity=500 unit=g"
+    );
+
+    expect(result.success).toBe(false);
+
+    if (!result.success) {
+      expect(result.error.code).toBe("invalid_field_syntax");
+      expect(result.error.message).toBe(
+        'Invalid field format near: lentils. Multi-word values must be wrapped in quotes.'
+      );
+    }
+  });
+
   it("allows empty quoted values", () => {
     const result = parseCommandText('/addInventory item_name="red lentils" notes=""');
 

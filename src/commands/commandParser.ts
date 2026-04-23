@@ -109,7 +109,10 @@ function parseFields(payload: string, rawText: string): FieldsParseResult {
     }
 
     if (payload[index] !== "=") {
-      return invalidFieldSyntax(rawText, `Expected "=" after field key: ${key}`);
+      return invalidFieldSyntax(
+        rawText,
+        `Invalid field format near: ${key}. Multi-word values must be wrapped in quotes.`
+      );
     }
 
     index += 1;
