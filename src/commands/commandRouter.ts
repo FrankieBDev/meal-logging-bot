@@ -3,6 +3,7 @@ import { type CommandResponse } from "./commandResponse";
 import { type BotCommand, type ParsedCommand } from "./commandTypes";
 import { handleAddInventoryCommand } from "./handlers/addInventoryHandler";
 import { handleHelpCommand } from "./handlers/helpHandler";
+import { handleLogMealCommand } from "./handlers/logMealHandler";
 
 export async function routeCommandText(text: string): Promise<CommandResponse> {
   const parseResult = parseCommandText(text);
@@ -31,6 +32,8 @@ async function routeParsedCommand(
       return handleAddInventoryCommand(parsedCommand);
 
     case "logMeal":
+      return handleLogMealCommand(parsedCommand);
+
     case "addProduct":
     case "closeDay":
     case "inventory":

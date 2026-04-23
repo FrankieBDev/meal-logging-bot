@@ -10,6 +10,7 @@ import { appendFoodLogItem } from "./sheets/foodLogRepository.js";
 import { appendInventoryEvent } from "./sheets/inventoryEventsRepository.js";
 import { appendDailyNote } from "./sheets/dailyNotesRepository.js";
 import { appendDailyNutritionSummary } from "./sheets/dailyNutritionSummaryRepository.js";
+import { processTelegramWebhook } from "./telegram/webhook.js";
 
 const app = express();
 
@@ -29,58 +30,9 @@ app.get("/test-error", () => {
 
 app.post("/telegram/webhook", async (req, res, next) => {
   try {
-    const senderId = req.body?.message?.from?.id;
+    const result = await processTelegramWebhook(req.body);
 
-    if (!senderId) {
-      logger.warn("Rejected Telegram webhook: missing sender ID");
-
-      res.status(400).json({
-        status: "rejected",
-        reason: "missing_sender_id",
-      });
-
-      return;
-    }
-
-    if (String(senderId) !== env.telegramAllowedUserId) {
-      logger.warn("Rejected Telegram webhook from unauthorised user", {
-        senderId,
-      });
-
-      res.status(403).json({
-        status: "rejected",
-        reason: "unauthorised_user",
-      });
-
-      return;
-    }
-
-    const messageText = req.body?.message?.text;
-
-    if (typeof messageText !== "string") {
-      logger.warn("Rejected Telegram webhook: missing message text", {
-        senderId,
-      });
-
-      res.status(400).json({
-        status: "rejected",
-        reason: "missing_message_text",
-      });
-
-      return;
-    }
-
-    logger.info("Accepted Telegram webhook command", {
-      senderId,
-      messageText,
-    });
-
-    const commandResponse = await routeCommandText(messageText);
-
-    res.json({
-      status: "received",
-      commandResponse,
-    });
+    res.status(result.statusCode).json(result.body);
   } catch (error) {
     next(error);
   }

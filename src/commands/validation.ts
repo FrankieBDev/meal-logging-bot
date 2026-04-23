@@ -18,11 +18,39 @@ export function getRequiredField(
   return value;
 }
 
+export function getRequiredTrimmedField(
+  fields: Record<string, string>,
+  key: string
+): string {
+  const value = getRequiredField(fields, key).trim();
+
+  if (value.length === 0) {
+    throw new ValidationError(`Missing required field: ${key}`);
+  }
+
+  return value;
+}
+
 export function getOptionalField(
   fields: Record<string, string>,
   key: string
 ): string | undefined {
   return fields[key];
+}
+
+export function getOptionalTrimmedField(
+  fields: Record<string, string>,
+  key: string
+): string | undefined {
+  const value = getOptionalField(fields, key);
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  return trimmedValue.length > 0 ? trimmedValue : undefined;
 }
 
 export function parseRequiredNumber(value: string, fieldName: string): number {
