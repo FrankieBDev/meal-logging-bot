@@ -25,10 +25,6 @@ type TelegramWebhookResult = {
 export async function processTelegramWebhook(
   body: TelegramWebhookBody
 ): Promise<TelegramWebhookResult> {
-
-  console.log("Telegram from.id:", body?.message?.from?.id);
-  console.log("Telegram chat.id:", body?.message?.chat?.id);
-
   const senderId = body.message?.from?.id;
 
   if (!senderId) {
