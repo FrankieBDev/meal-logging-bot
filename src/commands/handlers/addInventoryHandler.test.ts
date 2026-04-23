@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { appendInventoryItem } from "../../sheets/inventoryRepository.js";
+import { GoogleSheetsConfigError } from "../../sheets/sheetsClient.js";
 import { handleAddInventoryCommand } from "./addInventoryHandler";
 import { type ParsedCommand } from "../commandTypes";
 
@@ -87,5 +88,26 @@ describe("handleAddInventoryCommand", () => {
         is_staple: false,
       })
     );
+  });
+
+  it("returns a clean error when Google Sheets config is missing", async () => {
+    vi.mocked(appendInventoryItem).mockRejectedValue(
+      new GoogleSheetsConfigError(
+        "Missing required Google Sheets environment variable: GOOGLE_APPLICATION_CREDENTIALS"
+      )
+    );
+
+    const response = await handleAddInventoryCommand(
+      buildParsedCommand({
+        item_name: "red lentils",
+        quantity: "500",
+        unit: "g",
+      })
+    );
+
+    expect(response).toEqual({
+      status: "error",
+      message: "Google Sheets is not configured for inventory commands yet.",
+    });
   });
 });

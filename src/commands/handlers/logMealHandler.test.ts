@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { appendFoodLogItem } from "../../sheets/foodLogRepository.js";
+import { GoogleSheetsConfigError } from "../../sheets/sheetsClient.js";
 import { type ParsedCommand } from "../commandTypes";
 import { handleLogMealCommand } from "./logMealHandler";
 
@@ -122,5 +123,26 @@ describe("handleLogMealCommand", () => {
       "Invalid meal_type. Expected breakfast, lunch, dinner, or snack."
     );
     expect(appendFoodLogItem).not.toHaveBeenCalled();
+  });
+
+  it("returns a clean error when Google Sheets config is missing", async () => {
+    vi.mocked(appendFoodLogItem).mockRejectedValue(
+      new GoogleSheetsConfigError(
+        "Missing required Google Sheets environment variable: GOOGLE_SHEETS_SPREADSHEET_ID"
+      )
+    );
+
+    const response = await handleLogMealCommand(
+      buildParsedCommand({
+        date: "2026-04-23",
+        meal_type: "lunch",
+        items_text: "rice bowl",
+      })
+    );
+
+    expect(response).toEqual({
+      status: "error",
+      message: "Google Sheets is not configured for meal logging yet.",
+    });
   });
 });

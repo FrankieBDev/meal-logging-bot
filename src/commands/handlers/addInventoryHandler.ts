@@ -9,6 +9,7 @@ import {
   parseRequiredNumber,
 } from "../validation";
 import { appendInventoryItem } from "../../sheets/inventoryRepository.js";
+import { GoogleSheetsConfigError } from "../../sheets/sheetsClient.js";
 
 export async function handleAddInventoryCommand(
   parsedCommand: ParsedCommand
@@ -69,6 +70,13 @@ export async function handleAddInventoryCommand(
       return {
         status: "error",
         message: error.message,
+      };
+    }
+
+    if (error instanceof GoogleSheetsConfigError) {
+      return {
+        status: "error",
+        message: "Google Sheets is not configured for inventory commands yet.",
       };
     }
 

@@ -7,6 +7,7 @@ import {
   getRequiredTrimmedField,
   parseOptionalNumber,
 } from "../validation";
+import { GoogleSheetsConfigError } from "../../sheets/sheetsClient.js";
 
 const VALID_MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"] as const;
 
@@ -88,6 +89,13 @@ export async function handleLogMealCommand(
       return {
         status: "error",
         message: error.message,
+      };
+    }
+
+    if (error instanceof GoogleSheetsConfigError) {
+      return {
+        status: "error",
+        message: "Google Sheets is not configured for meal logging yet.",
       };
     }
 
