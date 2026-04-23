@@ -44,7 +44,9 @@ describe("processTelegramWebhook", () => {
         },
       },
     });
-    expect(routeCommandText).toHaveBeenCalledWith("/help");
+    expect(routeCommandText).toHaveBeenCalledWith("/help", {
+      actorId: String(process.env.TELEGRAM_ALLOWED_USER_ID),
+    });
     expect(sendTelegramMessage).toHaveBeenCalledWith(12345, "Meal Logging Bot help");
   });
 

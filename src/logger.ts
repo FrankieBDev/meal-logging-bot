@@ -12,7 +12,18 @@ function log(level: LogLevel, message: string, details?: unknown): void {
     return;
   }
 
-  console.log(`${prefix} ${message}`, details);
+  console.log(`${prefix} ${message}`, sanitiseLogDetails(details));
+}
+
+function sanitiseLogDetails(details: unknown): unknown {
+  if (!(details instanceof Error)) {
+    return details;
+  }
+
+  return {
+    name: details.name,
+    message: details.message,
+  };
 }
 
 export const logger = {

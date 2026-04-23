@@ -3,6 +3,7 @@ import { type CommandResponse } from "../commandResponse";
 import { type ParsedCommand } from "../commandTypes";
 import {
   ValidationError,
+  assertNoUnknownFields,
   getOptionalTrimmedField,
   getRequiredTrimmedField,
   parseOptionalNumber,
@@ -15,6 +16,23 @@ export async function handleLogMealCommand(
   parsedCommand: ParsedCommand
 ): Promise<CommandResponse> {
   try {
+    assertNoUnknownFields(parsedCommand.fields, [
+      "date",
+      "meal_type",
+      "items_text",
+      "time",
+      "quantity_text",
+      "energy_kcal",
+      "protein_g",
+      "carbs_g",
+      "fat_g",
+      "fibre_g",
+      "notes",
+      "source",
+      "confidence",
+      "status",
+    ]);
+
     const date = getRequiredTrimmedField(parsedCommand.fields, "date");
     const mealType = getRequiredTrimmedField(parsedCommand.fields, "meal_type")
       .toLowerCase();

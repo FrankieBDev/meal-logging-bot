@@ -1,6 +1,8 @@
 export type BotCommand =
   | "help"
   | "addProduct"
+  | "confirm"
+  | "cancel"
   | "addInventory"
   | "logMeal"
   | "closeDay"
@@ -14,6 +16,10 @@ export type ParsedCommand = {
   rawText: string;
   rawPayload: string;
   fields: Record<string, string>;
+};
+
+export type CommandContext = {
+  actorId?: string;
 };
 
 export type ParseResult =
@@ -39,6 +45,8 @@ export type CommandParseError = {
 export const SUPPORTED_COMMANDS: Record<string, BotCommand> = {
   "/help": "help",
   "/addProduct": "addProduct",
+  "/confirm": "confirm",
+  "/cancel": "cancel",
   "/addInventory": "addInventory",
   "/logMeal": "logMeal",
   "/closeDay": "closeDay",

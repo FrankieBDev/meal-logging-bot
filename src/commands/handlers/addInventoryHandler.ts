@@ -2,6 +2,7 @@ import { type CommandResponse } from "../commandResponse";
 import { type ParsedCommand } from "../commandTypes";
 import {
   ValidationError,
+  assertNoUnknownFields,
   getOptionalField,
   getRequiredField,
   parseOptionalBoolean,
@@ -15,6 +16,23 @@ export async function handleAddInventoryCommand(
   parsedCommand: ParsedCommand
 ): Promise<CommandResponse> {
   try {
+    assertNoUnknownFields(parsedCommand.fields, [
+      "item_name",
+      "quantity",
+      "unit",
+      "product_id",
+      "category",
+      "quantity_description",
+      "location",
+      "bb_date",
+      "use_by_date",
+      "status",
+      "is_staple",
+      "priority",
+      "confidence",
+      "notes",
+    ]);
+
     const itemName = getRequiredField(parsedCommand.fields, "item_name");
     const quantityValue = getRequiredField(parsedCommand.fields, "quantity");
     const unit = getRequiredField(parsedCommand.fields, "unit");

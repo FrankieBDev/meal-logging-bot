@@ -87,10 +87,12 @@ export async function processTelegramWebhook(
 
   logger.info("Accepted Telegram webhook command", {
     senderId,
-    messageText,
+    command: extractCommandToken(messageText),
   });
 
-  const commandResponse = await routeCommandText(messageText);
+  const commandResponse = await routeCommandText(messageText, {
+    actorId: String(senderId),
+  });
   const commandToken = extractCommandToken(messageText);
 
   try {

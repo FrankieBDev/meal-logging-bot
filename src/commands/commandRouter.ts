@@ -1,11 +1,26 @@
 import { parseCommandText } from "./commandParser";
 import { type CommandResponse } from "./commandResponse";
-import { type BotCommand, type ParsedCommand } from "./commandTypes";
+import { type CommandContext, type ParsedCommand } from "./commandTypes";
+import {
+  handleAddProductCommand,
+  handleCancelCommandWithParsedCommand,
+  handleConfirmCommand,
+} from "./handlers/addProductHandler";
 import { handleAddInventoryCommand } from "./handlers/addInventoryHandler";
+import { handleCloseDayCommand } from "./handlers/closeDayHandler";
 import { handleHelpCommand } from "./handlers/helpHandler";
 import { handleLogMealCommand } from "./handlers/logMealHandler";
+import {
+  handleGptPlanContextCommand,
+  handleGptTodayCommand,
+  handleInventoryCommand,
+  handleUseSoonCommand,
+} from "./handlers/retrievalHandlers";
 
-export async function routeCommandText(text: string): Promise<CommandResponse> {
+export async function routeCommandText(
+  text: string,
+  context: CommandContext = {}
+): Promise<CommandResponse> {
   const parseResult = parseCommandText(text);
 
   if (!parseResult.success) {
@@ -18,15 +33,25 @@ export async function routeCommandText(text: string): Promise<CommandResponse> {
     };
   }
 
-  return routeParsedCommand(parseResult.parsedCommand);
+  return routeParsedCommand(parseResult.parsedCommand, context);
 }
 
 async function routeParsedCommand(
-  parsedCommand: ParsedCommand
+  parsedCommand: ParsedCommand,
+  context: CommandContext
 ): Promise<CommandResponse> {
   switch (parsedCommand.command) {
     case "help":
       return handleHelpCommand();
+
+    case "addProduct":
+      return handleAddProductCommand(parsedCommand, context);
+
+    case "confirm":
+      return handleConfirmCommand(parsedCommand, context);
+
+    case "cancel":
+      return handleCancelCommandWithParsedCommand(parsedCommand, context);
 
     case "addInventory":
       return handleAddInventoryCommand(parsedCommand);
@@ -34,30 +59,25 @@ async function routeParsedCommand(
     case "logMeal":
       return handleLogMealCommand(parsedCommand);
 
-    case "addProduct":
     case "closeDay":
+      return handleCloseDayCommand(parsedCommand, context);
+
     case "inventory":
+      return handleInventoryCommand(parsedCommand);
+
     case "useSoon":
+      return handleUseSoonCommand(parsedCommand);
+
     case "gptToday":
+      return handleGptTodayCommand(parsedCommand);
+
     case "gptPlanContext":
-      return recognisedButNotImplemented(parsedCommand.command);
+      return handleGptPlanContextCommand(parsedCommand);
 
     default:
       return assertNever(parsedCommand.command);
   }
 }
-
-function recognisedButNotImplemented(command: BotCommand): CommandResponse {
-  return {
-    status: "ok",
-    message: `/${command} is recognised but not implemented yet.`,
-    data: {
-      command,
-      implemented: false,
-    },
-  };
-}
-
 function assertNever(value: never): never {
   throw new Error(`Unhandled command: ${value}`);
 }

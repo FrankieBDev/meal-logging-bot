@@ -53,3 +53,42 @@ export async function appendRecordByHeaders(
     throw error;
   }
 }
+
+export async function readRecordsByHeaders(
+  sheetName: string
+): Promise<Record<string, string>[]> {
+  try {
+    const sheets = await createSheetsClient();
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: getSpreadsheetId(),
+      range: `${sheetName}!A:ZZ`,
+    });
+
+    const rows = response.data.values ?? [];
+    const headers = rows[0];
+
+    if (!headers || headers.length === 0) {
+      throw new Error(`No header row found for sheet: ${sheetName}`);
+    }
+
+    return rows.slice(1).map((row) => {
+      const record: Record<string, string> = {};
+
+      headers.forEach((header, index) => {
+        const key = String(header).trim();
+        record[key] = String(row[index] ?? "");
+      });
+
+      return record;
+    });
+  } catch (error) {
+    const configError = toGoogleSheetsConfigError(error);
+
+    if (configError) {
+      throw configError;
+    }
+
+    throw error;
+  }
+}

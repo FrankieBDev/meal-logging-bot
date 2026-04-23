@@ -90,6 +90,23 @@ describe("handleAddInventoryCommand", () => {
     );
   });
 
+  it("rejects unknown fields", async () => {
+    const response = await handleAddInventoryCommand(
+      buildParsedCommand({
+        item_name: "red lentils",
+        quantity: "500",
+        unit: "g",
+        surprise: "yes",
+      })
+    );
+
+    expect(response).toEqual({
+      status: "error",
+      message:
+        "Unknown field: surprise. Allowed fields: item_name, quantity, unit, product_id, category, quantity_description, location, bb_date, use_by_date, status, is_staple, priority, confidence, notes",
+    });
+  });
+
   it("returns a clean error when Google Sheets config is missing", async () => {
     vi.mocked(appendInventoryItem).mockRejectedValue(
       new GoogleSheetsConfigError(

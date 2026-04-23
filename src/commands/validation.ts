@@ -5,6 +5,26 @@ export class ValidationError extends Error {
   }
 }
 
+export function assertNoUnknownFields(
+  fields: Record<string, string>,
+  allowedFields: readonly string[]
+): void {
+  const allowedFieldSet = new Set(allowedFields);
+
+  for (const key of Object.keys(fields)) {
+    if (!allowedFieldSet.has(key)) {
+      const allowedFieldsMessage =
+        allowedFields.length > 0
+          ? `Allowed fields: ${allowedFields.join(", ")}`
+          : "This command does not accept fields.";
+
+      throw new ValidationError(
+        `Unknown field: ${key}. ${allowedFieldsMessage}`
+      );
+    }
+  }
+}
+
 export function getRequiredField(
   fields: Record<string, string>,
   key: string
