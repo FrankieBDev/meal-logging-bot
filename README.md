@@ -1,172 +1,87 @@
-# Meal Logging Bot MVP
+# Meal Logging Bot
 
-Meal Logging Bot is the capture, persistence, and retrieval layer for a Meal Planner Automation MVP.
+### TL;DR
 
-Telegram is the user interface.
-Google Sheets is the MVP source of truth.
-Meal Planner GPT remains the planning and reasoning layer.
+Meal Logging Bot is a personal meal logging service with a Telegram input interface, a Node.js + TypeScript backend deployed serverlessly on Vercel, and Google Sheets acting as a structured data store.
 
-## MVP Scope
+It supports quick phone-based logging for meals, inventory updates and product information, then returns structured summaries that can be used with a private custom Meal Planner GPT.
 
-Implemented:
-- Telegram webhook handling with allowed-user restriction
-- Command parsing with strict `key=value` payloads
-- Inventory capture with `/addInventory`
-- Meal capture with `/logMeal`
-- Product preview flow with `/addProduct`, `/confirm`, `/cancel`
-- Close-day preview flow with `/closeDay`, `/confirm`, `/cancel`
-- Read-only retrieval commands: `/inventory`, `/useSoon`, `/gptToday`, `/gptPlanContext`
+I built this as a learning-first project using ChatGPT and Codex to experiment with how AI tools can support real product development. I used ChatGPT as a planning and pairing tool to explore architecture options, understand trade-offs, compare technologies, debug problems, and learn about new concepts.
 
-Non-goals for this MVP:
-- Rich Telegram UI widgets or keyboards
-- Multi-user collaboration
-- Persistent preview state across deploys
-- Advanced natural-language parsing
-- Automated nutrition reasoning inside the bot
+This project is the first iteration of a developing personal food, nutrition, health planning and data evaluation system.
 
-## Architecture Overview
+## Why I Built This
 
-- Telegram webhook receives messages and applies sender restrictions.
-- The command router parses strict slash commands and returns transport-agnostic `CommandResponse` objects.
-- Handlers validate fields, call repository helpers, and return deterministic plain-text results.
-- Telegram delivery happens only at the webhook boundary via `sendMessage`.
-- Google Sheets repositories read and write the source-of-truth tabs.
+I originally created a private custom Meal Planner GPT to help with meal planning, nutrition reflection, calorie awareness and food shopping.
 
-## Local Development
+On its own, it helped reduce much of the cognitive load around food decisions. It supported recipe creation, estimating calories, reflecting on patterns, adjusting around energy and appetite, and making better food choices that fit my personal needs.
 
-Prerequisites:
-- Node.js 20+
-- npm
-- A Telegram bot token
-- A Google Sheet with the expected tabs
-- A Google service account with access to that spreadsheet
+It worked really well as a reasoning and coaching tool, but I knew I could make the overall system work even better for me.
 
-Install:
+For better long-term analysis and planning, I wanted a way to record what I was eating, track daily context, support gradual, long term health goals, and manage a rapidly changing food inventory. I wanted that data to be structured, searchable, and easy to inspect, instead of scattered across chat history.
 
-```bash
-npm install
-```
+This project is my first attempt at building that missing layer.
 
-Run locally:
-
-```bash
-npm run dev
-```
-
-Run tests:
-
-```bash
-npm test
-```
-
-Build:
-
-```bash
-npm run build
-```
-
-## Environment Variables
-
-Required at startup:
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_ALLOWED_USER_ID`
-
-Optional:
-- `PORT`
-- `DEBUG_ROUTES_ENABLED`
-
-Required for Google Sheets access:
-- `GOOGLE_SHEETS_SPREADSHEET_ID`
-- `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-- `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
-
-Optional local fallback for Google auth:
-- `GOOGLE_APPLICATION_CREDENTIALS`
-
-`DEBUG_ROUTES_ENABLED=true` enables temporary local/debug routes. Keep it unset or `false` in production.
-
-## Google Sheets Tabs
-
-Expected tabs:
-- `Inventory`
-- `FoodLog`
-- `DailyNotes`
-- `ProductCatalogue`
-
-Other tabs may exist for future work, but the MVP command flow currently depends on the tabs above.
-
-The row headers should match the repository field names already used by the app.
-
-## Command Format
-
-Commands use strict slash-command syntax with `key=value` fields.
-
-Rules:
-- Multi-word values must be wrapped in double quotes
-- Unknown fields are rejected
-- Field names are case-sensitive
-- Command names are slash-prefixed
-
-Examples:
+The basic flow is:
 
 ```text
-/help
-/addInventory item_name="red lentils" quantity=500 unit=g location=cupboard
-/logMeal date=2026-04-23 meal_type=lunch items_text="rice, broccoli, seitan" quantity_text="1 bowl" energy_kcal=550
-/addProduct product_name="Greek yoghurt" brand="Fage" category=dairy
-/closeDay date=2026-04-23 mood=calm energy=medium appetite=normal notes="steady day"
-/confirm
-/cancel
-/inventory
-/useSoon
-/gptToday
-/gptToday date=2026-04-23
-/gptPlanContext
+Telegram input
+      ↓
+Vercel-hosted TypeScript backend
+      ↓
+Google Apps Script bridge
+      ↓
+Google Sheets data store
+      ↓
+Structured summaries for GPT-assisted reflection
 ```
 
-## Implemented Command Summary
+## What It Does
 
-`/addInventory`
-- Writes immediately to `Inventory`
+Meal Logging Bot supports a small set of focused workflows:
 
-`/logMeal`
-- Writes immediately to `FoodLog`
+- log meals into a structured `FoodLog` sheet
+- add and manage food inventory in an `Inventory` sheet
+- add product information into a `ProductCatalogue` sheet
+- close the day with useful context such as mood, energy, appetite and notes
+- retrieve current inventory
+- retrieve food that should be used soon
+- generate structured summaries for GPT-assisted meal planning and reflection
 
-`/addProduct`
-- Creates a pending preview
-- `/confirm` writes to `ProductCatalogue`
-- `/cancel` discards the preview
+The bot uses strict slash commands with `key=value` fields. This was an intentional decision. Strict commands are less flexible than natural language, but they are easier to validate, test and debug.
 
-`/closeDay`
-- Creates a pending preview
-- `/confirm` writes to `DailyNotes`
-- `/cancel` discards the preview
+Example commands:
 
-`/inventory`
-- Lists active inventory rows
+```text
+/logMeal date=2026-04-24 meal_type=breakfast items_text="scrambled eggs with spinach and tomatoes" quantity_text="2 eggs + spinach + 1/2 tin tomatoes" energy_kcal=230 protein_g=16 fibre_g=5
+```
+```
+/addInventory item_name="blueberries" quantity=300 unit=g location=fridge
+```
+```
+/closeDay date=2026-04-24 mood=calm energy=medium appetite=normal notes="office day"
+```
 
-`/useSoon`
-- Lists active dated inventory rows sorted by earliest date
+[add tel flow screenshot]
 
-`/gptToday`
-- Returns a compact today-focused GPT handoff
+[add google sheets ss]
 
-`/gptPlanContext`
-- Returns a broader planning handoff
+## How This Fits With the Custom GPT
 
-## Security Notes
+The Meal Planner GPT is a private custom GPT that acts as the planning and reasoning layer for this system.
 
-- Do not commit real `.env` values
-- Do not commit service-account credentials
-- Restrict Telegram access with `TELEGRAM_ALLOWED_USER_ID`
-- Keep `DEBUG_ROUTES_ENABLED` off in production
-- Logs should avoid secrets and full sensitive payloads
+It is set up to understand my meal planning preferences, nutrition goals, and logging format. When needed, it can turn a meal description into a bot-ready command using the strict `key=value` format expected by Meal Logging Bot.
 
-## Future Improvements
+For example, I can describe a meal naturally in ChatGPT, then ask for a Telegram-ready logging command. The GPT can estimate the useful fields, format the command, and keep the output compatible with the bot parser.
 
-- Persist preview state outside process memory
-- Add richer inventory status handling
-- Add structured date validation
-- Add pagination or chunking for longer retrieval responses
-- Add admin auth around debug tooling if retained
-- Add integration tests against a dedicated test spreadsheet
+This keeps the responsibilities separate:
+
+```text
+Meal Planner GPT
+Planning, reasoning, calorie estimation, reflection, command formatting
+
+Meal Logging Bot
+Capture, validation, storage, retrieval
+
+
+tbc
