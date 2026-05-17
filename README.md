@@ -62,9 +62,10 @@ Example commands:
 /closeDay date=2026-04-24 mood=calm energy=medium appetite=normal notes="office day"
 ```
 
-[add tel flow screenshot]
+<img width="625" height="1279" alt="telegram-flow" src="https://github.com/user-attachments/assets/ffe7d872-0fb4-4a5c-aff8-550417d1f4a0" />
 
-[add google sheets ss]
+<img width="1412" height="100" alt="google-sheets-data" src="https://github.com/user-attachments/assets/48aee8ee-d0a3-4625-a26f-d421a4659cd0" />
+
 
 ## How This Fits With the Custom GPT
 
