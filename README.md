@@ -73,7 +73,7 @@ The Meal Planner GPT is a private custom GPT that acts as the planning and reaso
 
 It is set up to understand my meal planning preferences, nutrition goals, and logging format. When needed, it can turn a meal description into a bot-ready command using the strict `key=value` format expected by Meal Logging Bot.
 
-For example, I can describe a meal naturally in ChatGPT, then ask for a Telegram-ready logging command. The GPT can estimate the useful fields, format the command, and keep the output compatible with the bot parser.
+For example, I can describe a meal using natural language or upload a picture to ChatGPT, then ask for a Telegram-ready logging command. The GPT can estimate the useful fields, format the command, and keep the output compatible with the bot parser.
 
 This keeps the responsibilities separate:
 
@@ -83,6 +83,47 @@ Planning, reasoning, calorie estimation, reflection, command formatting
 
 Meal Logging Bot
 Capture, validation, storage, retrieval
+```
+This separation is one of the core design decisions in the project.
+
+The bot is intentionally not trying to be a full AI assistant. It does not need to understand every messy meal description or make complex nutrition decisions. Instead, it provides a reliable place to capture and retrieve structured data.
+
+The custom GPT remains the place where interpretation happens, and Google Sheets remains an easy-to-maintain personal data store that I can inspect and analyse myself.
+
+## Architecture
+
+The MVP architecture is deliberately simple and inspectable.
+
+```text
+User
+  ↓
+Telegram Bot
+  ↓
+Vercel Serverless Function
+  ↓
+Node.js + TypeScript Backend
+  ↓
+Google Apps Script Endpoint
+  ↓
+Google Sheets
+```
+## What I Learned
+
+This project helped me practise:
+
+- creating a Telegram bot
+- using Telegram bots as a lightweight way to build a phone-first interface.
+- working with webhooks
+- designing simple command-based workflows
+- parsing and validating structured input
+- using TypeScript for backend code
+- connecting a serverless backend to Google Sheets
+- using environment variables for configuration
+- writing tests around command parsing and handlers
+- using ChatGPT and Codex as practical development tools
 
 
-tbc
+
+
+
+
